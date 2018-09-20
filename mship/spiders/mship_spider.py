@@ -1,6 +1,9 @@
 import scrapy
+from pandas import read_csv
+
 from . import scraper_meta as meta
-from ..items import Product
+from ..items import Product, Category
+
 
 class ProductSpider(scrapy.Spider):
     name = "product"
@@ -10,6 +13,7 @@ class ProductSpider(scrapy.Spider):
         urls = [
             'https://mship.no/22-engines-equipment',
         ]
+
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
@@ -26,16 +30,37 @@ class ProductSpider(scrapy.Spider):
             time.sleep(3)
             yield scrapy.Request(req_url, callback=self.parse, dont_filter=True)
         else:
-            product_snippets = response.css(meta.ProductsList.CSS.product_snippet)
+            products_snippets = response.css(meta.ProductsList.CSS.product_snippet)
 
-            for product_snippet in product_snippets:
-                yield self.parse_products_list(response, product_snippet)
+            for product_snippet in products_snippets:
+                yield self.parse_product(response, product_snippet)
 
-
-    def parse_products_list(self, response, product_snippet):
+    def parse_product(self, response, product_snippet):
         product = Product()
-        name = product_snippet.css(meta.Product.CSS.name).extract_first()
-        url = product_snippet.css(meta.Product.CSS.url).extract_first()
-        product['name'] = name
-        product['url'] = url
+        product['name'] = product_snippet.css(meta.Product.CSS.name).extract_first()
+        product['url'] = product_snippet.css(meta.Product.CSS.url).extract_first()
         return product
+
+
+class CategorySpider(scrapy.Spider):
+    name = "category"
+
+    allowed_domains = ['mship.no']
+    start_urls = [
+        'https://mship.no/22-engines-equipment',
+        'https://mship.no/23-spare-parts'
+    ]
+
+    # TODO сделать рекурсивный обход каждой категории.
+    # Сейчас все категории получаем просто из вложенного списка на главной.
+
+    def parse(self, response):
+        categories_snippets = response.css(meta.CategoriesList.CSS.snippet)
+        for category_snippet in categories_snippets:
+            yield self.parse_category(response, category_snippet)
+
+    def parse_category(self, response, category_snippet):
+        category = Category()
+        category['name'] = category_snippet.css(meta.Category.CSS.name).extract_first().strip()
+        category['url'] = category_snippet.css(meta.Category.CSS.url).extract_first()
+        return category
