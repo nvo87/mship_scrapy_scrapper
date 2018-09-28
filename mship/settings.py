@@ -66,7 +66,7 @@ ROBOTSTXT_OBEY = True
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    'mship.pipelines.MshipPipeline': 500,
-   'mship.pipelines.CsvPipeline': 300,
+   # 'mship.pipelines.CsvPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

@@ -9,6 +9,11 @@ class ProductsList:
     class CSS:
         product_snippet = 'div.product-container'
 
+class ProductData:
+    class CSS:
+        name_h1 = 'h1[itemprop="name"]::text'
+        title = 'title::text'
+
 
 class Category:
     class CSS:
